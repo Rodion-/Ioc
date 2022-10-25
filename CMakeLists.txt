@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.15.3)
 
 
-set (PROJECT_NAME ioc)
+set (PROJECT_NAME ioc2)
 project(${PROJECT_NAME} CXX )
 
 set(CMAKE_CXX_STANDARD 17)
@@ -27,7 +27,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC
                            "${PROJECT_BINARY_DIR}"
                            )
 
-target_link_libraries(${targetName} PUBLIC libgtest.a libgtest_main.a )
+target_link_libraries(${targetName} PUBLIC libgmock.a libgmock_main.a libgtest.a libgtest_main.a  )
 
 target_compile_options(${targetName} PRIVATE
                         -Wall

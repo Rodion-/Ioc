@@ -5,16 +5,20 @@
 #include <iostream>
 #include "command.h"
 
+template<typename T>
 class Ioc
 {
-    std::unordered_map< std::string , ICommand*(*)( std::string argv[] ) > m_types;
+    using types = std::unordered_map< std::string , T*(*)( std::string argv[] ) >;
+    types m_types;
+
+    std::unordered_map< std::string , types > map_scope;
 
     public:
 
     Ioc(){}
     ~Ioc(){}
 
-    ICommand* Resolve( std::string type , std::string argv[] )
+    T* Resolve( std::string type , std::string argv[] )
     {
         auto result = m_types.find( type );
 
@@ -24,7 +28,7 @@ class Ioc
         }
     }
 
-    void Register( std::string type , ICommand*(*create)( std::string argv[] ) )
+    void Register( std::string type , T*(*create)( std::string argv[] ) )
     {
         m_types.insert( std::make_pair( type , create ) );
     }
