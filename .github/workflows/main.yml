@@ -34,7 +34,7 @@ jobs:
       #  run: sudo apt-get update && sudo apt-get install libboost-filesystem-dev -y
       
       - name: install googletest
-        run: sudo apt-get update && sudo apt-get install libgtest-dev libmock-dev
+        run: sudo apt-get update && sudo apt-get install libgtest-dev libgmock-dev
 
       - name: Run a one-line script
         run: cmake .
