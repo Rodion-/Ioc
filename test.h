@@ -217,35 +217,35 @@ TEST( mocktest9 , macroCommandRotate )
 }
 
 
-std::shared_ptr<UObjectMock> spaceship = std::make_shared<UObjectMock>();
+//std::shared_ptr<UObjectMock> spaceship = std::make_shared<UObjectMock>();
 
-TEST( mocktest10 , IoC )
-{
-    Ioc<ICommand> ioc;
+//TEST( mocktest10 , IoC )
+//{
+//    Ioc<ICommand> ioc;
 
-    testing::Mock::AllowLeak( &spaceship );
+//    testing::Mock::AllowLeak( &spaceship );
 
-    spaceship->DelegateToFake();
+//    spaceship->DelegateToFake();
 
-    ioc.Register( "move" , []( std::string argv[] )->ICommand*
-        {
-            position xy{ std::stoi( argv[ 0 ] ) , std::stoi( argv[ 1 ] ) };
-            velocity vel{ std::stoi( argv[ 2 ] ) , std::stoi( argv[ 3 ] ) };
-            return new MoveAdapter( spaceship , xy , vel );
-        }
-    );
+//    ioc.Register( "move" , []( std::string argv[] )->ICommand*
+//        {
+//            position xy{ std::stoi( argv[ 0 ] ) , std::stoi( argv[ 1 ] ) };
+//            velocity vel{ std::stoi( argv[ 2 ] ) , std::stoi( argv[ 3 ] ) };
+//            return new MoveAdapter( spaceship , xy , vel );
+//        }
+//    );
 
-    std::string argv[ 10 ];
-    argv[0]="1";
-    argv[1]="2";
-    argv[2]="3";
-    argv[3]="4";
+//    std::string argv[ 10 ];
+//    argv[0]="1";
+//    argv[1]="2";
+//    argv[2]="3";
+//    argv[3]="4";
 
-    ioc.Resolve( "move" , argv )->execute();
+//    ioc.Resolve( "move" , argv )->execute();
 
-    position xy = *( (position*) spaceship->get_property( "position" ) );
+//    position xy = *( (position*) spaceship->get_property( "position" ) );
 
-    EXPECT_EQ( xy.x , 4 );
-    EXPECT_EQ( xy.y , 6 );
-}
+//    EXPECT_EQ( xy.x , 4 );
+//    EXPECT_EQ( xy.y , 6 );
+//}
 
