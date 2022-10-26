@@ -27,7 +27,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC
                            "${PROJECT_BINARY_DIR}"
                            )
 
-target_link_libraries(${targetName} PUBLIC libgtest.a libgtest_main.a )
+target_link_libraries(${targetName} PUBLIC libgmock.a libgmock_main.a libgtest.a libgtest_main.a  )
 
 target_compile_options(${targetName} PRIVATE
                         -Wall

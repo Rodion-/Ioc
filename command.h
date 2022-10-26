@@ -1,51 +1,15 @@
 #ifndef COMMAND_H
 #define COMMAND_H
 
+#include "UObject.h"
 #include "icommand.h"
 #include "exception.h"
 #include <iostream>
 #include <memory>
 
-typedef struct position
+class CheckFuelAdapter : public ICommand , std::enable_shared_from_this<CheckFuelAdapter>
 {
-    int x;
-    int y;
-} position;
-
-typedef struct velocity
-{
-    int x;
-    int y;
-} velocity;
-
-
-class UObject   //
-{
-
-    position coordinates;
-    velocity v;
-
-    int angle;
-
-
-    public:
-
-    UObject(){}
-    ~UObject(){}
-
-    void set_property ( std::string property )
-    {
-    }
-
-    void get_property ( std::string property )
-    {
-    }
-
-};
-
-class CheckFuelAdapter : public ICommand
-{
-    std::shared_ptr<UObject> ob;
+    std::shared_ptr<IUObject> ob;
 
     int fuel;
 
@@ -53,29 +17,24 @@ class CheckFuelAdapter : public ICommand
 
     public:
 
-    CheckFuelAdapter( std::shared_ptr<UObject> _ob ) : ob( _ob )
+    CheckFuelAdapter( std::shared_ptr<IUObject> _ob ) : ob( _ob )
     {
         cmdtype = "CheckFuel" ;
     }
     ~CheckFuelAdapter(){}
 
-    void set_fuel_for_test( int f )
-    {
-        fuel = f;
-    }
 
-     void execute(  void ) override
+    void execute(  void ) override
      {
-        //  fuel = ob->get_property("fuel");
+          fuel = *((int*)ob->get_property("fuel"));
 
          if( fuel == 0 ) throw Exception{ cmdtype , ExceptionType::ArgumentException , ExceptionStaus::NOTPROCESSED };
-//         std::cout<< "CheckFuelAdapter : " << std::endl;
      }
 };
 
 class BurnFuelAdapter : public ICommand
 {
-    std::shared_ptr<UObject> ob;
+    std::shared_ptr<IUObject> ob;
 
     int fuel;
 
@@ -83,41 +42,33 @@ class BurnFuelAdapter : public ICommand
 
     public:
 
-    BurnFuelAdapter( std::shared_ptr<UObject> _ob , int _fuel ) : ob( _ob ) , fuel( _fuel )
-    {
+    BurnFuelAdapter( std::shared_ptr<IUObject> _ob ) : ob( _ob )     {
         cmdtype = "BurnFuel" ;
     }
     ~BurnFuelAdapter(){}
 
-    int get_fuel_for_test( void )
-    {
-        return fuel;
-    }
-
-
      void execute(  void ) override
      {
-         fuel -= 1;
+         fuel = *( ( int* ) ob->get_property( "fuel") );
 
-         ob->set_property("fuel");
-//         std::cout<< "BurnFuelAdapter : " <<  fuel << std::endl;
+         fuel--;
+
+         ob->set_property( "fuel" , &fuel );
      }
 };
 
 class MoveAdapter : public ICommand
 {
-    std::shared_ptr<UObject> ob;
+    std::shared_ptr<IUObject> ob;
 
     std::string cmdtype;
 
-    //----mock part
     position pos;
     velocity vel;
-    //----
 
     public:
 
-    MoveAdapter( std::shared_ptr<UObject> _ob , position _pos , velocity _vel) : ob( _ob ) , pos( _pos ) , vel( _vel )
+    MoveAdapter( std::shared_ptr<IUObject> _ob , position _pos , velocity _vel) : ob( _ob ) , pos( _pos ) , vel( _vel )
     {
         cmdtype = "Move" ;
     }
@@ -132,115 +83,20 @@ class MoveAdapter : public ICommand
         pos.x = pos.x + vel.x;
         pos.y = pos.y + vel.y;
 
-        std::cout<< "MoveAdapter : " <<  pos.x << " " << pos.y << std::endl;
-
-        //ob->set_property();
-    }
-
-    void set_position( position* xy )
-    {
-        pos = *xy;
-    }
-
-    void get_position( position* xy )
-    {
-        xy->x = pos.x;
-        xy->y = pos.y;
-    }
-
-    void set_velocity( velocity* v )
-    {
-        vel = *v;
-    }
-
-    void get_velocity( velocity* v )
-    {
-        v->x = vel.x;
-        v->y = vel.y;
-    }
-};
-
-class VelocityAdapter : public ICommand
-{
-    std::shared_ptr<UObject> ob;
-
-    std::string cmdtype;
-
-    //----mock part
-    velocity vel;
-    //----
-
-    public:
-
-    VelocityAdapter( std::shared_ptr<UObject> _ob , velocity _vel) : ob( _ob ) , vel( _vel )
-    {
-        cmdtype = "Velocity" ;
-    }
-    ~VelocityAdapter(){}
-
-    void execute(  void ) override
-    {
-        if( vel.x && !vel.y ) throw Exception{ cmdtype , ExceptionType::ArgumentException , ExceptionStaus::NOTPROCESSED };
-
-        ob->get_property("is_movable");
-
-        ob->get_property("velocity");
-        velocity ob_vel;
-
-        ob_vel.x += vel.x;
-        ob_vel.y += vel.y;
-
-        ob->set_property("velocity");
-    }
-};
-
-class RotationAdapter : public ICommand
-{
-    std::shared_ptr<UObject> ob;
-
-    std::string cmdtype;
-    //---Mock
-    int angle;
-    //-------
-
-    public:
-
-    RotationAdapter( std::shared_ptr<UObject> _ob , int _angle) : ob( _ob ) , angle( _angle )
-    {
-        cmdtype = "Rotation" ;
-    }
-    ~RotationAdapter(){}
-
-    void set_angle( int  a )
-    {
-        angle = a;
-    }
-
-    void get_angle( int* a )
-    {
-        *a = angle;
-    }
-
-    void execute() override
-    {
-        std::cout<< "RotationAdapter : " <<  angle << std::endl;
-        //ob->set_property();
-        if( angle == 0 ) throw Exception{ cmdtype , ExceptionType::ArgumentException , ExceptionStaus::NOTPROCESSED };
+        ob->set_property( "position" , &pos );
     }
 };
 
 class macroCommandMove : public ICommand
 {
-    std::shared_ptr<UObject> ob;
+    std::shared_ptr<IUObject> ob;
     position xy;
     velocity vel;
 
-    int fuel_level;
-
     public:
 
-    macroCommandMove( std::shared_ptr<UObject> _ob , position _xy , velocity _vel , int _fuel_level )
-        : ob( _ob ) , xy( _xy ) , vel( _vel ) , fuel_level( _fuel_level )
+    macroCommandMove( std::shared_ptr<IUObject> _ob , position _xy , velocity _vel )
+        : ob( _ob ) , xy( _xy ) , vel( _vel )
     {
 
     }
@@ -249,7 +105,7 @@ class macroCommandMove : public ICommand
 
     void execute ( void )
     {
-        BurnFuelAdapter BurnFuelCommand( ob , fuel_level );
+        BurnFuelAdapter BurnFuelCommand( ob );
         CheckFuelAdapter CheckFuelCommand( ob );
         MoveAdapter MoveCommand( ob , xy , vel );
 
@@ -257,20 +113,76 @@ class macroCommandMove : public ICommand
         MoveCommand.execute();
         BurnFuelCommand.execute();
     }
+};
 
+
+class ChangeVelocityAdapter : public ICommand
+{
+    std::shared_ptr<IUObject> ob;
+
+    std::string cmdtype;
+
+    velocity vel;
+
+    public:
+
+    ChangeVelocityAdapter( std::shared_ptr<IUObject> _ob , velocity _vel) : ob( _ob ) , vel( _vel )
+    {
+        cmdtype = "Velocity" ;
+    }
+    ~ChangeVelocityAdapter(){}
+
+    void execute(  void ) override
+    {
+        bool is_movable = *( ( bool* ) ob->get_property("is_movable") );
+
+        if( is_movable == false )
+        throw Exception{ cmdtype , ExceptionType::ArgumentException , ExceptionStaus::NOTPROCESSED };
+
+        velocity ob_vel;
+
+        ob_vel = *( ( velocity* ) ob->get_property( "velocity" ) );
+
+        ob_vel.x += vel.x;
+        ob_vel.y += vel.y;
+
+        ob->set_property("velocity" , &ob_vel );
+    }
+};
+
+class RotationAdapter : public ICommand
+{
+    std::shared_ptr<IUObject> ob;
+
+    std::string cmdtype;
+
+    int angle;
+
+    public:
+
+    RotationAdapter( std::shared_ptr<IUObject> _ob , int _angle) : ob( _ob ) , angle( _angle )
+    {
+        cmdtype = "Rotation" ;
+    }
+    ~RotationAdapter(){}
+
+    void execute() override
+    {
+        if( angle == 0 ) throw Exception{ cmdtype , ExceptionType::ArgumentException , ExceptionStaus::NOTPROCESSED };
+        ob->set_property( "angle" , &angle );
+    }
 };
 
 class macroCommandRotate : public ICommand
 {
-    std::shared_ptr<UObject> ob;
+    std::shared_ptr<IUObject> ob;
     velocity vel;
     int angle;
-    int fuel_level;
 
     public:
 
-    macroCommandRotate( std::shared_ptr<UObject> _ob , int _angle , int _fuel_level , velocity _vel )
-        : ob( _ob ) , angle( _angle ) , fuel_level( _fuel_level ) , vel( _vel )
+    macroCommandRotate( std::shared_ptr<IUObject> _ob , int _angle )
+        : ob( _ob ) , angle( _angle )
     {
 
     }
@@ -279,22 +191,20 @@ class macroCommandRotate : public ICommand
 
     void execute ( void )
     {
-        BurnFuelAdapter BurnFuelCommand( ob , fuel_level );
+        vel = *( ( velocity* ) ob->get_property( "velocity" ) );
+
+        vel.x *= cos( angle );
+        vel.y *= sin( angle );
+
+        BurnFuelAdapter BurnFuelCommand( ob );
         CheckFuelAdapter CheckFuelCommand( ob );
-        VelocityAdapter VelocityCommand( ob , vel );
+        ChangeVelocityAdapter VelocityCommand( ob , vel );
         RotationAdapter RotationCommand( ob , angle);
 
-
-        try
-        {
-            CheckFuelCommand.execute();
-            RotationCommand.execute();
-            BurnFuelCommand.execute();
-        }
-        catch ( Exception ex )
-        {
-            throw Exception{ "CommandException" , ExceptionType::TYPE2Exception , ExceptionStaus::NOTPROCESSED };
-        }
+        CheckFuelCommand.execute();
+        RotationCommand.execute();
+        VelocityCommand.execute();
+        BurnFuelCommand.execute();
     }
 };
 
